@@ -1,64 +1,62 @@
-# 运行说明
+# 运行说明 / 執行說明 / Run Guide
 
-本仓库包含两个独立的 Go 模块（各自有 `main.go`）：
+## 项目概览 / 專案概覽 / Overview
 
-- `bsphp.go.user`：账号模式图形界面（登录/注册/找回/充值 + 控制台）
-- `bsphp.go.car`：卡模式图形界面（卡串/机器码 + 主控制面板）
+- 简体中文：本仓库包含两个独立 Go 模块：`bsphp.go.user`（账号模式）与 `bsphp.go.car`（卡模式）。
+- 繁體中文：本倉庫包含兩個獨立 Go 模組：`bsphp.go.user`（帳號模式）與 `bsphp.go.car`（卡密模式）。
+- English: This repo contains two standalone Go modules: `bsphp.go.user` (account mode) and `bsphp.go.car` (card mode).
 
-## 准备条件
+## 运行前准备 / 執行前準備 / Prerequisites
 
-1. 安装 Go（项目 `go.mod` 使用 `go 1.22`，建议 Go 1.22+）
-2. 需要可访问网络（程序会请求 `demo.bsphp.com`）
-3. 需要系统可弹出图形界面；Web 登录/续费会调用系统浏览器打开页面
+- 简体中文：安装 Go 1.22+，确保网络可访问 `demo.bsphp.com`，并支持图形界面。
+- 繁體中文：安裝 Go 1.22+，確認網路可連線 `demo.bsphp.com`，且可開啟圖形介面。
+- English: Install Go 1.22+, ensure network access to `demo.bsphp.com`, and run in a GUI-capable environment.
 
-## 如何运行
+## 运行命令 / 執行指令 / Commands
 
-在仓库根目录依次运行以下命令之一即可（无需额外参数）：
-
-### 账号模式（推荐先用这个验证环境）
+### 账号模式 / 帳號模式 / Account Mode
 ```sh
 cd bsphp.go.user
 go run .
 ```
 
-### 卡模式
+### 卡模式 / 卡密模式 / Card Mode
 ```sh
 cd bsphp.go.car
 go run .
 ```
 
-首次运行会下载依赖，稍等片刻后会弹出窗口。
+- 简体中文：首次运行会下载依赖，请稍等。
+- 繁體中文：首次執行會下載相依套件，請稍候。
+- English: The first run will download dependencies.
 
-## 启动后会做什么
+## 启动行为 / 啟動行為 / Startup Behavior
 
-### `bsphp.go.user`（账号模式）
-- 启动后会调用 `client.Bootstrap()`：
-  - 连接服务端
-  - 获取公告
-  - 获取“验证码开关”等服务端配置（决定 UI 行为）
-- Web 登录流程：
-  - 点击 Web 登录相关按钮后，会在系统浏览器打开登录页
-  - 程序后台每 2 秒轮询心跳，直到返回码 `5031`，随后打开“控制台”窗口
-- 验证码图片会通过 HTTP 拉取；刷新时会在图片 URL 后追加时间戳（避免缓存）。
+### `bsphp.go.user`
+- 简体中文：启动后执行 `client.Bootstrap()`，加载公告与验证码开关；Web 登录会轮询心跳，`5031` 视为登录成功。
+- 繁體中文：啟動後執行 `client.Bootstrap()`，載入公告與驗證碼開關；Web 登入以心跳輪詢，`5031` 視為成功。
+- English: On start it runs `client.Bootstrap()`, loads notice and captcha flags; Web login polls heartbeat and treats `5031` as success.
 
-### `bsphp.go.car`（卡模式）
-- 启动后会调用 `client.Bootstrap()`，并在界面显示公告
-- 在界面中输入卡串/充值卡号/机器码等，点击按钮触发对应 API（例如验证使用、充值、续费等）
-- 机器码 `MachineCode()`：
-  - 优先读取本机 `HostID`
-  - 失败则生成随机 ID，并写入用户配置目录做持久复用
+### `bsphp.go.car`
+- 简体中文：启动后执行 `client.Bootstrap()`；通过卡串/机器码执行验证、充值、续费等接口。
+- 繁體中文：啟動後執行 `client.Bootstrap()`；可透過卡密/機器碼執行驗證、儲值、續費等介面。
+- English: On start it runs `client.Bootstrap()`; supports verify/recharge/renew flows with card string or machine code.
 
-## 修改服务端地址/密钥
+## 配置修改 / 設定修改 / Configuration
 
-程序的服务端地址、通信密钥、RSA 公私钥等是写死在各自模块的：
+- 简体中文：请修改以下文件中的常量后重启：
+  - `bsphp.go.user/internal/config/config.go`
+  - `bsphp.go.car/internal/config/config.go`
+- 繁體中文：請修改以下檔案中的常數後重新啟動：
+  - `bsphp.go.user/internal/config/config.go`
+  - `bsphp.go.car/internal/config/config.go`
+- English: Update constants in the files below and restart:
+  - `bsphp.go.user/internal/config/config.go`
+  - `bsphp.go.car/internal/config/config.go`
 
-- `bsphp.go.user/internal/config/config.go`
-- `bsphp.go.car/internal/config/config.go`
+## 常见问题 / 常見問題 / FAQ
 
-如需切换环境（测试/正式）请在对应文件里修改常量，然后重新运行。
-
-## 常见问题
-
-- “服务未连接/网络连接异常”：通常是网络被代理/防火墙拦截，或 `demo.bsphp.com` 无法访问。先确认网络通畅。
-- Web 登录后一直不弹控制台：通常是浏览器未完成登录，或心跳返回码不是 `5031`（可在 UI 里观察状态文案）。
+- 简体中文：若提示网络异常，请先检查代理、防火墙与域名连通性。
+- 繁體中文：若提示網路異常，請先檢查代理、防火牆與網域連通性。
+- English: If you see network errors, check proxy/firewall/domain connectivity first.
 
